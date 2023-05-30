@@ -1,0 +1,222 @@
+doctype html
+html
+  head
+    title Chatbot
+    style.
+      body {
+        font-family: Arial, sans-serif;
+        background-color: #f2f2f2;
+        overflow: hidden;
+      }
+
+      .chat-toggle-button {
+        position: fixed;
+        bottom: 20px;
+        right: 20px;
+        padding: 10px 20px;
+        background-color: #333;
+        color: #fff;
+        border: none;
+        border-radius: 5px;
+        cursor: pointer;
+        z-index: 1;
+      }
+
+      .chat-container {
+        position: fixed;
+        bottom: 80px;
+        right: 20px;
+        max-width: 400px;
+        background-color: #fff;
+        box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.1);
+        display: none;
+        margin-top: 20px;
+      }
+
+      .chat-header {
+        padding: 15px;
+        background-color: #333;
+        color: #fff;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+      }
+
+      .chat-header h1 {
+        margin: 0;
+      }
+
+      .close-button {
+        background-color: transparent;
+        color: #fff;
+        border: none;
+        cursor: pointer;
+      }
+
+      .chat-messages {
+        height: 300px;
+        overflow-y: scroll;
+        padding: 15px;
+      }
+
+      .message {
+        margin-bottom: 10px;
+      }
+
+      .user-message {
+        background-color: #4CAF50;
+        color: #fff;
+        padding: 10px;
+        border-radius: 10px;
+        display:inline-block
+      }
+
+      .bot-message {
+      	background-color:#f1f1f1; 
+      	color:#333; 
+      	padding :10px; 
+      	border-radius :10px; 
+      	margin :15px 0 15px 0; 
+      	display:inline-block
+      }
+
+      .chat-input {
+      	display:flex; 
+      	align-items:center; 
+      	padding :15px; 
+      	background-color:#f2f2f2
+      }
+
+      input[type="text"] {
+      	flex :1; 
+      	padding :10px; 
+      	border:none; 
+      	border-radius :5px; 
+      	outline:none
+      }
+
+      button {
+      	padding :10px 20px; 
+      	background-color:#333; 
+      	color:#fff; 
+      	border:none; 
+      	border-radius :5px; 
+      	cursor:pointer; 
+      	margin-left :10px
+      }
+      
+      button[disabled]{
+          opacity:.5
+      }
+      
+  body
+    button#chat-toggle.chat-toggle-button(onclick='toggleChatbot()') Chatbot
+    #chat-container.chat-container
+      .chat-header
+        h1 Chatbot
+        button#close-button.close-button(onclick='closeChatbot(chatbotConfig)') Cerrar
+      .chat-messages#chat-messages
+      .chat-input
+        input(type='text', id='user-input', onkeydown='sendMessage(event)', placeholder='Escribe tu mensaje...')
+        button#send-button(onclick='sendMessage(event)', disabled) Enviar
+    
+    script.
+      async function iniciarPrompt() {
+        const response = await fetch('/iniciar-prompt');
+        const data = await response.json();
+        console.log(data);
+        document.querySelector('#chat-messages').textContent = data.prompt;
+        console.log('Valor del prompt iniciado:', data.prompt);
+      }
+      // Variable para controlar la visibilidad del chatbot
+      var isChatbotVisible = false;
+      async function toggleChatbot() {
+        // Cambiar el valor de la variable isChatbotVisible
+        console.log('Valor de isChatbotVisible antes de cambiarlo', isChatbotVisible);
+        isChatbotVisible = !isChatbotVisible;
+        console.log('Valor de isChatbotVisible después de cambiarlo', isChatbotVisible);
+        // Obtener el elemento #chat-container
+        console.log('Buscando #chat-container');
+        const chatContainer = document.querySelector('#chat-container');
+        // Si isChatbotVisible es true, mostrar el chatbot
+        if (isChatbotVisible) {
+          chatContainer.style.display = 'block';
+          iniciarPrompt();
+          console.log('Enviando solicitud a /iniciar-prompt');
+        } else {
+          chatContainer.style.display = 'none';
+        }
+          
+      };
+
+          // Verificar que se recibió el valor correcto
+          //console.log('Valor del prompt iniciado:', data.prompt);
+          const form = document.querySelector('form');
+          const promptInput = document.querySelector('#prompt');
+          const maxTokensInput = document.querySelector('#max_tokens');
+          const responseElement = document.querySelector('#response');
+          const spinnerElement = document.querySelector('.spinner');
+
+         
+      // Función para enviar un mensaje
+      function sendMessage(event) {
+        const userInput = document.getElementById('user-input');
+        const sendButton = document.getElementById('send-button');
+        if (event.key === 'Enter' || event.target.id === 'send-button') {
+          event.preventDefault();
+          if (userInput.value.trim() !== '') {
+            sendUserMessage();
+          }
+        }
+        sendButton.disabled = userInput.value.trim() === '';
+      }
+      async function sendUserMessage() {
+        var userInput = document.getElementById('user-input');
+        var chatMessages = document.getElementById('chat-messages');
+        console.log('User input is', userInput.value);
+        var userMessage = document.createElement('div');
+        userMessage.className = 'message user-message';
+        userMessage.innerHTML = userInput.value;
+        chatMessages.appendChild(userMessage);
+
+        // Obtener la respuesta del bot utilizando una solicitud fetch
+        const prompt = userInput.value;
+        const response = await fetch(`/openai/${prompt}`);
+        const botResponse = await response.text();
+
+        console.log('Bot response is', botResponse);
+
+        var botMessage = document.createElement('div');
+        botMessage.className = 'message bot-message';
+        botMessage.innerHTML = botResponse;
+        chatMessages.appendChild(botMessage);
+
+        userInput.value = '';
+        chatMessages.scrollTop = chatMessages.scrollHeight;
+      }
+      // Crear la variable chatbotConfig
+      const chatbotConfig = {
+          model: "text-davinci-003",
+          temperature: 0.9,
+          max_tokens: 150,
+          top_p: 1,
+          frequency_penalty: 0,
+          presence_penalty: 0.6,
+          xhr: new XMLHttpRequest() // Inicializar la propiedad xhr
+          };
+      // Función para cerrar el chatbot
+      function closeChatbot(chatbotConfig) {
+        var chatContainer = document.getElementById('chat-container');
+        chatContainer.style.display = 'none';
+        isChatbotVisible = false;
+        // Cerrar la conexión API
+        chatbotConfig.xhr.abort();
+        console.log("Cerrando API Openai")
+         // Limpiar el contenido de userMessage
+         var userMessage = document.querySelector('.chat-messages');
+         if (userMessage) {
+          userMessage.textContent = '';
+          }
+        }
+      
+    	
