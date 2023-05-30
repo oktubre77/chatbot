@@ -9,9 +9,3 @@
 
 # Archivos de configuración del entorno
 .env
-
-fly.toml
-Dockerfile
-.dockerignore
-node_modules
-.git
