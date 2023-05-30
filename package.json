@@ -4,13 +4,13 @@
   "description": "Proyecto chatbot vendedor de Celulares",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "start" : "node src/chatbot.js"
   },
   "repository": {
     "type": "git",
     "url": "git+https://github.com/oktubre77/chatbot.git"
   },
-  "author": "",
+  "author": "German C. Mendoza",
   "license": "ISC",
   "bugs": {
     "url": "https://github.com/oktubre77/chatbot/issues"
